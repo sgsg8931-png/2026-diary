@@ -1,0 +1,108 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2026학년도 2-2 학급일지</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:'맑은 고딕',system-ui,sans-serif;color:#333;background:#fff;font-size:14px}
+header{padding:18px 28px 6px}h1{margin:0;font-size:28px}
+.banner{margin:10px 28px;padding:10px 14px;background:#e8f1ec;border-radius:6px;font-size:13px}
+nav{display:flex;gap:6px;padding:6px 28px;border-bottom:1px solid #ddd;flex-wrap:wrap}
+nav button{border:0;background:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:14px}
+nav button.on{background:#e8eef9;font-weight:700}
+main{display:grid;grid-template-columns:1fr 260px;gap:24px;padding:14px 28px}
+@media(max-width:1000px){main{grid-template-columns:1fr}}
+.bar{display:flex;align-items:center;gap:10px;margin-bottom:8px}.bar h2{margin:0;font-size:20px;min-width:130px}
+.btn{border:1px solid #ccc;background:#fff;border-radius:6px;padding:5px 12px;cursor:pointer}.btn:hover{background:#f3f3f3}.pri{background:#2383e2;color:#fff;border-color:#2383e2}.pri:hover{background:#1b6fc2}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid #ddd;border-left:1px solid #ddd}
+.cal>div{border-right:1px solid #ddd;border-bottom:1px solid #ddd}
+.dow{padding:4px 8px;font-size:12px;color:#888;background:#fafafa;text-align:center}
+.cell{min-height:132px;padding:4px;cursor:pointer;font-size:11.5px;overflow:hidden}.cell:hover{background:#f5f9ff}
+.cell.out{background:#f7f7f7;color:#aaa}.cell.we{background:#fafafa}.cell.today .dn{background:#eb5757;color:#fff;border-radius:50%}
+.dn{display:inline-block;min-width:22px;height:22px;line-height:22px;text-align:center;font-weight:700;font-size:12px}
+.pl{background:#e8eef9;border-left:3px solid #2383e2;border-radius:3px;margin:2px 0;padding:1px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl b{color:#2383e2}.ab{background:#fde4e4;border-left:3px solid #e03e3e;border-radius:3px;margin:2px 0;padding:1px 4px}
+.td{color:#2e7d57;margin-top:2px}
+.side h3{margin:14px 0 6px;padding:4px 8px;border-radius:4px;font-size:14px}
+.side a{display:block;padding:3px 8px;cursor:pointer;color:#333}.side a:hover{background:#f0f0f0}
+.s1{background:#fbebe8}.s2{background:#fdf0e0}.s3{background:#fbf3d9}.s4{background:#e3f0fa}.s5{background:#e4f1e8}.s6{background:#f0e8f8}
+table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:4px 6px;vertical-align:top}th{background:#fafafa}
+input,textarea,select{font:inherit;border:1px solid #e0e0e0;border-radius:4px;padding:4px 6px;width:100%;background:#fff}
+textarea{resize:vertical;min-height:34px}input:focus,textarea:focus{outline:2px solid #bcd9f7}
+.hide{display:none}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(760px,100%);background:#fff;box-shadow:-4px 0 24px #0003;overflow:auto;padding:18px 22px;z-index:9}
+.dayform .lab{font-weight:700;padding:6px 8px;border-radius:4px;margin:12px 0 4px}
+.per{border:1px solid #dbe5f5;border-radius:8px;padding:8px;margin:6px 0;background:#f8fbff}
+.per .h{font-weight:700;font-size:16px;color:#2383e2;margin-bottom:4px}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.chk{display:flex;gap:6px;align-items:center;margin:3px 0}.chk input[type=checkbox]{width:auto}
+.week{display:grid;grid-template-columns:repeat(5,minmax(230px,1fr));gap:8px;overflow:auto}
+.week .col{border:1px solid #ddd;border-radius:8px;padding:8px}
+.hwc{text-align:center;cursor:pointer;user-select:none;min-width:34px}
+.stat{display:inline-block;margin:4px 8px 4px 0;padding:4px 10px;background:#f3f3f3;border-radius:14px}
+@media print{nav,.side,.btn,header .btn{display:none}main{display:block}.drawer{position:static;box-shadow:none;width:auto}}
+</style></head><body>
+<header><h1>2026학년도 2-2 학급일지</h1></header>
+<div class="banner">📌 달력에서 날짜를 누르면 그날의 업무일지가 열려요. 모든 내용은 이 브라우저에 자동 저장됩니다. (백업 탭에서 파일로 저장 가능)</div>
+<nav id="nav"></nav>
+<main><section id="view"></section>
+<aside class="side">
+<h3 class="s1">바로가기</h3><a onclick="go('cal')">📅 월간 달력</a><a onclick="go('week')">🗓 주간 보기</a><a onclick="openDay(iso(new Date()))">✏️ 오늘 일지 쓰기</a>
+<h3 class="s2">학생 관리</h3><a onclick="go('roster')">👥 학생 명부</a><a onclick="go('hw')">📝 숙제 제출</a>
+<h3 class="s4">오늘 (<span id="tdate"></span>)</h3><div id="today"></div>
+<h3 class="s6">백업</h3><a onclick="go('backup')">💾 저장 / 불러오기</a>
+</aside></main>
+<div id="drawer" class="drawer hide"></div>
+<script>
+const KEY='classlog2026';const DAYS=['일','월','화','수','목','금','토'];
+let D=JSON.parse(localStorage.getItem(KEY)||'null')||{days:{},students:Array.from({length:25},()=>({name:'',gender:'',phone:'',health:'',memo:''})),hw:[],hwSub:{}};
+const save=()=>localStorage.setItem(KEY,JSON.stringify(D));
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const P=s=>{const[a,b,c]=s.split('-');return new Date(+a,b-1,+c)};
+const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const TODO=['메신저 확인','공람 등 서류 확인','학년업무 확인'];
+function day(k){if(!D.days[k])D.days[k]={late:'',absent:'',early:'',morning:'',p:Array.from({length:5},()=>({subj:'',content:'',link:''})),notice:[{t:'',d:0},{t:'',d:0},{t:'',d:0}],todo:TODO.map(t=>({t,d:0})).concat([{t:'',d:0},{t:'',d:0}]),memo:''};return D.days[k]}
+let cur=new Date(2026,9,1),tab='cal',wk=null;
+const tabs={cal:'📅 월간 달력',week:'🗓 주간',roster:'👥 학생명부',hw:'📝 숙제',backup:'💾 백업'};
+function go(t){tab=t;render()}
+function render(){document.getElementById('nav').innerHTML=Object.entries(tabs).map(([k,v])=>`<button class="${k==tab?'on':''}" onclick="go('${k}')">${v}</button>`).join('');
+ ({cal:rCal,week:rWeek,roster:rRoster,hw:rHw,backup:rBackup})[tab]();side()}
+function side(){const k=iso(new Date());document.getElementById('tdate').textContent=k.slice(5);const d=D.days[k];
+ document.getElementById('today').innerHTML=d?`<div style="padding:0 8px;font-size:12.5px">${d.p.map((p,i)=>p.subj?`<div><b>${i+1}</b> ${esc(p.subj)}</div>`:'').join('')||'수업 미입력'}<div class="td">할 일 ${d.todo.filter(t=>t.t&&t.d).length}/${d.todo.filter(t=>t.t).length}</div></div>`:'<a onclick="openDay(\''+k+'\')">아직 기록 없음 → 쓰기</a>'}
+function rCal(){const y=cur.getFullYear(),m=cur.getMonth();const first=new Date(y,m,1),start=new Date(y,m,1-first.getDay());
+ let h=`<div class="bar"><button class="btn" onclick="mv(-1)">◀</button><h2>${y}년 ${m+1}월</h2><button class="btn" onclick="mv(1)">▶</button><button class="btn" onclick="cur=new Date(2026,9,1);render()">10월</button><button class="btn" onclick="cur=new Date(2026,10,1);render()">11월</button><button class="btn" onclick="cur=new Date();render()">오늘</button></div><div class="cal">`+DAYS.map(d=>`<div class="dow">${d}</div>`).join('');
+ let st={a:0,l:0,e:0,n:0};const td=iso(new Date());
+ for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);if(i>=35&&d.getMonth()!=m)break;const k=iso(d),x=D.days[k],out=d.getMonth()!=m;
+  let c='';if(x){c+=['absent','early','late'].map((f,j)=>x[f]?`<div class="ab">${['결석','조퇴','지각'][j]}: ${esc(x[f])}</div>`:'').join('');
+   c+=x.p.map((p,j)=>p.subj||p.content?`<div class="pl" title="${esc(p.content)}"><b>${j+1}</b> ${esc(p.subj)} ${esc(p.content)}</div>`:'').join('');
+   const o=x.todo.filter(t=>t.t&&!t.d).length;if(o)c+=`<div class="td">☐ 할 일 ${o}</div>`;
+   if(!out){if(x.absent)st.a++;if(x.early)st.e++;if(x.late)st.l++;if(x.p.some(p=>p.subj))st.n++}}
+  h+=`<div class="cell ${out?'out':''} ${d.getDay()%6==0?'we':''} ${k==td?'today':''}" onclick="openDay('${k}')"><span class="dn">${d.getDate()}</span>${c}</div>`}
+ h+=`</div><p><span class="stat">수업 기록 ${st.n}일</span><span class="stat">결석 기록 ${st.a}일</span><span class="stat">조퇴 ${st.e}일</span><span class="stat">지각 ${st.l}일</span></p>`;
+ document.getElementById('view').innerHTML=h}
+function mv(n){cur=new Date(cur.getFullYear(),cur.getMonth()+n,1);render()}
+function mon(d){const x=new Date(d);x.setDate(x.getDate()-((x.getDay()+6)%7));return x}
+function rWeek(){if(!wk)wk=mon(new Date());let h=`<div class="bar"><button class="btn" onclick="wk.setDate(wk.getDate()-7);render()">◀</button><h2>${iso(wk).slice(5)} ~ ${iso(new Date(wk.getFullYear(),wk.getMonth(),wk.getDate()+4)).slice(5)}</h2><button class="btn" onclick="wk.setDate(wk.getDate()+7);render()">▶</button><button class="btn" onclick="wk=mon(new Date());render()">이번 주</button><button class="btn" onclick="window.print()">🖨 인쇄</button></div><div class="week">`;
+ for(let i=0;i<5;i++){const d=new Date(wk);d.setDate(wk.getDate()+i);h+=`<div class="col"><h3 style="margin:0 0 4px">${d.getMonth()+1}/${d.getDate()} (${DAYS[d.getDay()]})</h3>${form(iso(d),true)}</div>`}
+ document.getElementById('view').innerHTML=h+'</div>'}
+function form(k,compact){const x=day(k);const b=(p,v,ph,ta)=>ta?`<textarea data-k="${k}" data-p="${p}" placeholder="${ph||''}">${esc(v)}</textarea>`:`<input data-k="${k}" data-p="${p}" value="${esc(v)}" placeholder="${ph||''}">`;
+ const ck=(arr,n,ph)=>x[arr].map((t,i)=>`<div class="chk"><input type="checkbox" ${t.d?'checked':''} data-k="${k}" data-p="${arr}.${i}.d" data-c="1"><input data-k="${k}" data-p="${arr}.${i}.t" value="${esc(t.t)}" placeholder="${ph}"></div>`).join('');
+ return `<div class="dayform"><div class="lab s1">🚨 출결</div>${b('absent',x.absent,'결석 (이름·사유)')}${b('early',x.early,'조퇴 (이름·시간)')}${b('late',x.late,'지각')}
+ <div class="lab s3">🌅 아침</div>${b('morning',x.morning,'아침활동',1)}
+ <div class="lab s4">📚 오늘 수업</div>${x.p.map((p,i)=>`<div class="per"><div class="h">${i+1}교시</div>${b('p.'+i+'.subj',p.subj,'과목·단원')}${b('p.'+i+'.content',p.content,'수업할 것 (활동)',1)}${b('p.'+i+'.link',p.link,'자료 링크/파일명 (PPT, 활동지…)')}${p.link&&/^https?:/.test(p.link)?`<a href="${esc(p.link)}" target="_blank">🔗 자료 열기</a>`:''}</div>`).join('')}
+ <div class="lab s5">📢 알림 전달</div>${ck('notice',0,'전달할 알림')}<div class="lab s5">✅ 업무 할일</div>${ck('todo',0,'할 일')}
+ <div class="lab s6">📝 메모</div>${b('memo',x.memo,'',1)}</div>`}
+function openDay(k){const d=document.getElementById('drawer');d.classList.remove('hide');const dt=P(k);
+ d.innerHTML=`<div class="bar"><h2 style="min-width:0">${dt.getMonth()+1}월 ${dt.getDate()}일 (${DAYS[dt.getDay()]}) 일지</h2><span style="flex:1"></span><button class="btn" onclick="hw2('${k}')">📝 이 날 숙제 추가</button><button class="btn pri" onclick="closeD()">닫기</button></div>`+form(k)}
+function closeD(){document.getElementById('drawer').classList.add('hide');render()}
+function hw2(k){const t=prompt('숙제 내용');if(t){D.hw.push({id:Date.now(),date:k,title:t});save();alert('숙제 탭에 추가됨')}}
+document.addEventListener('input',e=>{const t=e.target;if(!t.dataset.k)return;const x=day(t.dataset.k);const ps=t.dataset.p.split('.');let o=x;for(let i=0;i<ps.length-1;i++)o=o[ps[i]];o[ps.at(-1)]=t.dataset.c?(t.checked?1:0):t.value;save()});
+function rRoster(){let h=`<div class="bar"><h2>👥 학생 명부</h2><button class="btn" onclick="D.students.push({name:'',gender:'',phone:'',health:'',memo:''});save();render()">+ 학생 추가</button></div><table><tr><th>번호</th><th>이름</th><th>성별</th><th>보호자 연락처</th><th>알레르기·건강</th><th>특이사항·상담</th></tr>`;
+ D.students.forEach((s,i)=>h+=`<tr><td>${i+1}</td>`+['name','gender','phone','health','memo'].map(f=>`<td><input value="${esc(s[f])}" oninput="D.students[${i}].${f}=this.value;save()"></td>`).join('')+'</tr>');
+ document.getElementById('view').innerHTML=h+'</table>'}
+function rHw(){let h=`<div class="bar"><h2>📝 숙제 제출</h2><button class="btn pri" onclick="let t=prompt('숙제 내용');if(t){D.hw.push({id:Date.now(),date:iso(new Date()),title:t});save();render()}">+ 숙제 추가</button></div><p style="color:#888">칸을 누르면 ○ → △ → × → 빈칸 순으로 바뀝니다. (○제출 △보완 ×미제출)</p><div style="overflow:auto"><table><tr><th>번호</th><th>이름</th>`+D.hw.map(w=>`<th>${w.date.slice(5)}<br><small>${esc(w.title)}</small><br><a style="cursor:pointer" onclick="D.hw=D.hw.filter(z=>z.id!=${w.id});save();render()">삭제</a></th>`).join('')+'<th>미제출</th></tr>';
+ D.students.forEach((s,i)=>{let n=0;h+=`<tr><td>${i+1}</td><td>${esc(s.name)}</td>`+D.hw.map(w=>{const v=(D.hwSub[w.id]||{})[i]||'';if(v=='×')n++;return `<td class="hwc" style="background:${v=='○'?'#e4f1e8':v=='△'?'#fbf3d9':v=='×'?'#fde4e4':''}" onclick="tg(${w.id},${i})">${v}</td>`}).join('')+`<td>${n}</td></tr>`});
+ document.getElementById('view').innerHTML=h+'</table></div>'}
+function tg(id,i){const o=D.hwSub[id]=D.hwSub[id]||{};const c=['','○','△','×'];o[i]=c[(c.indexOf(o[i]||'')+1)%4];save();rHw()}
+function rBackup(){document.getElementById('view').innerHTML=`<h2>💾 백업</h2><p>브라우저를 바꾸거나 기록을 지우기 전에 파일로 저장해 두세요.</p><button class="btn pri" onclick="exp()">파일로 저장(JSON)</button> <label class="btn">불러오기<input type="file" class="hide" accept=".json" onchange="imp(this.files[0])"></label>`}
+function exp(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(D)],{type:'application/json'}));a.download='학급일지_백업_'+iso(new Date())+'.json';a.click()}
+function imp(f){const r=new FileReader();r.onload=()=>{D=JSON.parse(r.result);save();render();alert('불러왔어요')};r.readAsText(f)}
+render();
+</script></body></html>
